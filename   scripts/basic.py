@@ -2,7 +2,13 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
+import yaml
+from yaml.loader import SafeLoader
 
+# Open the file and load the file
+with open('config/ai_config.yaml') as f:
+    data = yaml.load(f, Loader=SafeLoader)
+    device = data['text_proctor']['device']
 # Mean Pooling - Take attention mask into account for correct averaging
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0]  # First element of model_output contains all token embeddings
@@ -22,11 +28,11 @@ model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
 #
 # model = AutoModel.from_pretrained('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
-model.to(torch.device("cpu"))
+model.to(torch.device(device))
 
 # Tokenize sentences
 encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
-encoded_input = encoded_input.to(torch.device("cpu"))
+encoded_input = encoded_input.to(torch.device(device))
 
 # Compute token embeddings for sentences
 with torch.no_grad():
@@ -43,7 +49,7 @@ source_sentence = """I am from chandigarh"""
 
 # Tokenize the source sentence
 encoded_source = tokenizer(source_sentence, padding=True, truncation=True, return_tensors='pt')
-encoded_source = encoded_source.to(torch.device("cpu"))
+encoded_source = encoded_source.to(torch.device(device))
 
 # Compute token embeddings for the source sentence
 with torch.no_grad():
