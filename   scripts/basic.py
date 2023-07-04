@@ -11,17 +11,22 @@ def mean_pooling(model_output, attention_mask):
 
 
 # Sentences we want sentence
-sentences = ["""Supervised learning is a foundational machine learning concept where algorithms learn from labeled data to make predictions based on input features. It's widely used in image recognition, natural language processing, and more. The process starts with a labeled dataset, training the model to predict outputs for new data. The goal is to generalize well to unseen instances, capturing patterns from labeled examples to make accurate predictions.""", "A machine learning technique called unsupervised learning uses algorithms to learn from unlabeled data and make predictions based on input properties. for example, Kmean Clustering, heirarichal Clustering, etc. To create a mapping function, it entails gathering and preparing data, choosing and training models. The objective is to accurately anticipate unknown data using the training data's right responses.","acitivation is worng and spelling too"]
+sentences = ["I am vansh from chitkara university and not from chandigarh"]
 
-# Load model from HuggingFace Hub
 tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
+
+# Load model from HuggingFace Hub
 model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
-model.to(torch.device("cuda"))
+# tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
+
+#
+# model = AutoModel.from_pretrained('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
+model.to(torch.device("cpu"))
 
 # Tokenize sentences
 encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
-encoded_input = encoded_input.to(torch.device("cuda"))
+encoded_input = encoded_input.to(torch.device("cpu"))
 
 # Compute token embeddings for sentences
 with torch.no_grad():
@@ -34,13 +39,11 @@ sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask']
 sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
 
 # Source sentence
-source_sentence = """Supervised learning is a prominent and foundational concept in the field of machine learning. It involves training algorithms to learn from labeled data and make predictions based on input features. This technique has found extensive applications across various domains, including image recognition, natural language processing, speech recognition, medical diagnosis, and financial forecasting, among others.
-At its core, supervised learning follows the notion of learning from examples. The process begins with a labeled dataset that consists of input-output pairs, where each input is a set of features, and each corresponding output is the desired target or label. The algorithm uses this labeled data to build a model that can accurately predict the correct output for unseen inputs.
-The main objective of supervised learning is to generalize well to new, unseen data. The model is trained to capture patterns and relationships between the input features and the corresponding output labels. By learning from the labeled examples, the model can infer the underlying patterns and make predictions on new, previously unseen instances."""
+source_sentence = """I am from chandigarh"""
 
 # Tokenize the source sentence
 encoded_source = tokenizer(source_sentence, padding=True, truncation=True, return_tensors='pt')
-encoded_source = encoded_source.to(torch.device("cuda"))
+encoded_source = encoded_source.to(torch.device("cpu"))
 
 # Compute token embeddings for the source sentence
 with torch.no_grad():
