@@ -61,3 +61,5 @@ similarity_scores = cosine_similarity(source_embedding, sentence_embeddings)
 
 print("Similarity scores:")
 print(similarity_scores)
+
+#https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
