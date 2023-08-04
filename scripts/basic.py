@@ -53,7 +53,6 @@ class SentenceSimilarity:
 
 # Usage
 if __name__ == "__main__":
-    model_name = 'sentence-transformers/all-MiniLM-L6-v2'
     config_path = 'config/ai_config.yaml'
     sentences = ["I am vansh from chitkara university and not from chandigarh",'hijklhlkjh']
     source_sentence = "I am from chandigarh"
