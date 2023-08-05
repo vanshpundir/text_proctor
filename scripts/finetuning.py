@@ -1,139 +1,28 @@
+import pandas as pd
 from sentence_transformers import SentenceTransformer, InputExample, losses
 from torch.utils.data import DataLoader
-import torch
+
+# Read the CSV file
+df = pd.read_csv("training_data.csv")
+df.fillna(0,inplace = True)
+# Extract the 'Text1', 'Text2', and 'Similarity' columns from the dataframe
+# Extract the 'Text1', 'Text2', and 'Similarity' columns from the dataframe
+texts1 = df['Text1'].astype(str).tolist()
+texts2 = df['Text2'].astype(str).tolist()
+similarities = df['Similarity'].astype(float).tolist()  # Convert the similarities to float
+
+# Create InputExample objects from the data
+train_examples = [InputExample(texts=[text1, text2], label=float(similarity)) for text1, text2, similarity in zip(texts1, texts2, similarities)]
+
+
 # Define the model. Either from scratch or by loading a pre-trained model
 model = SentenceTransformer('distilbert-base-nli-mean-tokens')
 
-# Define your train examples with more diverse sentences and labels (cosine similarity scores)
-train_examples = [
-    InputExample(texts=['I am from India.', 'I am not from India.'], label=0.1),  # Example with negation
-    InputExample(texts=['I love this movie.', 'This movie is terrible.'], label=0.05),
-    # Example with opposite sentiments
-    InputExample(texts=['My first sentence', 'My second sentence'], label=0.8),
-    InputExample(texts=['Another pair', 'Unrelated sentence'], label=0.03),
-    InputExample(texts=['The weather is beautiful today.', 'It looks like it will rain.'], label=0.15),
-    InputExample(texts=['I enjoy playing sports.', 'I prefer indoor activities.'], label=0.2),
-    InputExample(texts=['Learning new things is exciting.', 'I find studying boring.'], label=0.1),
-    InputExample(texts=['This restaurant serves delicious food.', 'Their food is tasteless.'], label=0.02),
-    InputExample(texts=['I had a great time at the party.', 'The party was a total disaster.'], label=0.03),
-    InputExample(texts=['My cat is adorable.', 'I am scared of cats.'], label=0.05),
-    # Additional examples
-    InputExample(texts=['The sun is shining brightly.', 'It is a gloomy day.'], label=0.08),
-    InputExample(texts=['I like to read books.', 'I rarely read books.'], label=0.12),
-    InputExample(texts=['The new movie is fantastic.', 'The new movie is disappointing.'], label=0.07),
-    InputExample(texts=['I am good at math.', 'Mathematics is not my strong suit.'], label=0.09),
-    InputExample(texts=['The cake tastes delicious.', 'The cake is too sweet to my liking.'], label=0.06),
-    InputExample(texts=['I enjoy going to the beach.', 'I don’t like the beach at all.'], label=0.04),
-    InputExample(texts=['I completed the marathon.', 'I couldn’t finish the race.'], label=0.03),
-    InputExample(texts=['The concert was amazing.', 'The concert was a letdown.'], label=0.05),
-    InputExample(texts=['I love traveling to new places.', 'I prefer staying at home.'], label=0.1),
-    InputExample(texts=['I aced the exam.', 'I failed the exam.'], label=0.02),
-    InputExample(texts=['The museum exhibit was fascinating.', 'The exhibit was boring.'], label=0.06),
-    InputExample(texts=['I have a lot of energy today.', 'I feel tired and lethargic.'], label=0.12),
-    InputExample(texts=['The book kept me hooked.', 'I couldn’t get into the book.'], label=0.07),
-    InputExample(texts=['I love spicy food.', 'I can’t handle spicy food.'], label=0.08),
-    InputExample(texts=['My favorite color is blue.', 'I don’t like the color blue.'], label=0.09),
-    InputExample(texts=['I always wake up early.', 'I overslept today.'], label=0.03),
-    InputExample(texts=['I enjoy gardening.', 'Gardening is a chore for me.'], label=0.1),
-    InputExample(texts=['The concert was too loud.', 'The concert had perfect sound.'], label=0.04),
-    InputExample(texts=['I love going on long hikes.', 'I dislike hiking.'], label=0.07),
-    InputExample(texts=['I am very organized.', 'I am quite messy.'], label=0.09),
-    InputExample(texts=['I had a wonderful dream.', 'I had a nightmare.'], label=0.05),
-    InputExample(texts=['I am a good cook.', 'My cooking skills are terrible.'], label=0.06),
-    InputExample(texts=['I enjoy working out at the gym.', 'I hate exercising.'], label=0.11),
-    InputExample(texts=['The party was a blast.', 'The party was a bore.'], label=0.04),
-    InputExample(texts=['I love going to concerts.', 'I don’t enjoy live music.'], label=0.09),
-    InputExample(texts=['The movie made me cry.', 'The movie didn’t evoke any emotions.'], label=0.08),
-    InputExample(texts=['I am optimistic about the future.', 'I am pessimistic about the future.'], label=0.12),
-    InputExample(texts=['I always arrive on time.', 'I am constantly late.'], label=0.05),
-    InputExample(texts=['I like spicy food.', 'I can’t stand spicy food.'], label=0.07),
-    InputExample(texts=['I love spending time with family.', 'I prefer being alone.'], label=0.1),
-    InputExample(texts=['I enjoy solving puzzles.', 'Puzzles frustrate me.'], label=0.09),
-    InputExample(texts=['The hotel room was comfortable.', 'The hotel room was uncomfortable.'], label=0.06),
-    InputExample(texts=['I like trying new cuisines.', 'I stick to familiar foods.'], label=0.08),
-    InputExample(texts=['The movie had a surprising twist.', 'The movie was predictable.'], label=0.07),
-    InputExample(texts=['I am a cat person.', 'I am a dog person.'], label=0.1),
-    InputExample(texts=['I love roller coasters.', 'I am afraid of heights.'], label=0.08),
-    InputExample(texts=['I enjoy photography.', 'Photography is not my interest.'], label=0.1),
-    InputExample(texts=['The book has a beautiful cover.', 'The book has a dull cover.'], label=0.06),
-    InputExample(texts=['I always speak my mind.', 'I keep my thoughts to myself.'], label=0.07),
-    InputExample(texts=['The new restaurant has great service.', 'The new restaurant has terrible service.'],
-                 label=0.04),
-    InputExample(texts=['I am a morning person.', 'I am a night owl.'], label=0.08),
-    InputExample(texts=['I love going to the movies.', 'I find movies boring.'], label=0.09),
-    InputExample(texts=['The artwork is stunning.', 'The artwork is unimpressive.'], label=0.05),
-    InputExample(texts=['I enjoy playing video games.', 'I don’t play video games.'], label=0.12),
-    InputExample(texts=['The party was a memorable experience.', 'The party was forgettable.'], label=0.06),
-    InputExample(texts=['I am a social person.', 'I am introverted.'], label=0.08),
-    InputExample(texts=['I love trying adventurous activities.', 'I prefer staying away from risks.'], label=0.09),
-    InputExample(texts=['The movie kept me on the edge of my seat.', 'The movie was dull and uneventful.'], label=0.03),
-    InputExample(texts=['I am a coffee enthusiast.', 'I don’t like the taste of coffee.'], label=0.06),
-    InputExample(texts=['I enjoy going to art museums.', 'Art museums bore me.'], label=0.07),
-    InputExample(texts=['I had a great shopping spree.', 'I regret my shopping spree.'], label=0.05),
-    InputExample(texts=['I love swimming in the ocean.', 'I am afraid of the ocean.'], label=0.07),
-    InputExample(texts=['The concert was electrifying.', 'The concert was lackluster.'], label=0.06),
-    InputExample(texts=['I am a risk-taker.', 'I am risk-averse.'], label=0.1),
-    InputExample(texts=['I enjoy going to amusement parks.', 'I dislike amusement parks.'], label=0.09),
-    InputExample(texts=['The book is thought-provoking.', 'The book is forgettable.'], label=0.05),
-    InputExample(texts=['I am always up for a challenge.', 'I avoid challenges whenever possible.'], label=0.08),
-    InputExample(texts=['I love trying new recipes.', 'I prefer sticking to familiar recipes.'], label=0.07),
-    InputExample(texts=['I had a wonderful childhood.', 'I had a difficult childhood.'], label=0.06),
-    InputExample(texts=['I am an outgoing person.', 'I am shy and reserved.'], label=0.08),
-    InputExample(texts=['I enjoy going on road trips.', 'I dislike long journeys.'], label=0.1),
-    InputExample(texts=['The new software is user-friendly.', 'The new software is complicated to use.'], label=0.05),
-    InputExample(texts=['I love going to music concerts.', 'I don’t enjoy live music performances.'], label=0.09),
-    InputExample(texts=['I am good at public speaking.', 'I struggle with public speaking.'], label=0.08),
-    InputExample(texts=['I enjoy watching romantic movies.', 'I don’t like romantic movies.'], label=0.11),
-    InputExample(texts=['The painting is mesmerizing.', 'The painting is unimpressive.'], label=0.06),
-    InputExample(texts=['I am a morning exerciser.', 'I prefer exercising in the evening.'], label=0.07),
-    InputExample(texts=['I love solving riddles.', 'Riddles confuse me.'], label=0.09),
-    InputExample(texts=['The new restaurant has amazing desserts.', 'The new restaurant’s desserts are mediocre.'],
-                 label=0.05),
-    InputExample(texts=['I am an optimist.', 'I am a pessimist.'], label=0.1),
-    InputExample(texts=['I enjoy going to comedy shows.', 'I don’t find comedy shows amusing.'], label=0.09),
-    InputExample(texts=['I am a tech-savvy person.', 'I struggle with technology.'], label=0.08),
-    InputExample(texts=['I love spicy food.', 'I can’t handle any spice.'], label=0.06),
-    InputExample(texts=['I always help others in need.', 'I rarely offer help to others.'], label=0.1),
-    InputExample(texts=['I enjoy DIY projects.', 'I am not good at DIY projects.'], label=0.07),
-    InputExample(texts=['The movie ending was surprising.', 'The movie ending was predictable.'], label=0.05),
-    InputExample(texts=['I am a dog lover.', 'I am not a fan of dogs.'], label=0.08),
-    InputExample(texts=['I love going to the beach.', 'I dislike sandy beaches.'], label=0.06),
-    InputExample(texts=['I am a thrill-seeker.', 'I avoid risky activities.'], label=0.09),
-    InputExample(texts=['I enjoy playing board games.', 'I find board games boring.'], label=0.07),
-    InputExample(texts=['The vacation was a fantastic experience.', 'The vacation was disappointing.'], label=0.03),
-    InputExample(texts=['I love trying different coffee flavors.', 'I only like plain coffee.'], label=0.06),
-    InputExample(texts=['I am an adventurous eater.', 'I am a picky eater.'], label=0.08),
-    InputExample(texts=['I enjoy going to live sports events.', 'I am not interested in sports.'], label=0.1),
-    InputExample(texts=['I always stay calm under pressure.', 'I get anxious in stressful situations.'], label=0.07),
-    InputExample(texts=['I love going to the zoo.', 'I am not a fan of zoos.'], label=0.06),
-    InputExample(texts=['I am a creative person.', 'I am not artistic at all.'], label=0.08),
-    InputExample(texts=['I enjoy trying exotic fruits.', 'I prefer sticking to familiar fruits.'], label=0.06),
-    InputExample(texts=['I am an extrovert.', 'I am an introvert.'], label=0.1),
-    InputExample(texts=['I love attending music festivals.', 'I don’t like crowded events.'], label=0.09),
-    InputExample(texts=['I am a good dancer.', 'I have two left feet when it comes to dancing.'], label=0.08),
-    InputExample(texts=['I enjoy watching sci-fi movies.', 'I don’t like science fiction movies.'], label=0.1),
-    InputExample(
-        texts=['The view from the top of the mountain was breathtaking.', 'The view from the top was disappointing.'],
-        label=0.06),
-    InputExample(texts=['I am a night person.', 'I am a morning person.'], label=0.09),
-    InputExample(texts=['I love going to the theater.', 'I find theater performances boring.'], label=0.07),
-    InputExample(texts=['I am a history buff.', 'I am not interested in history.'], label=0.08),
-    InputExample(texts=['I enjoy trying new hairstyles.', 'I stick to my usual hairstyle.'], label=0.06),
-    InputExample(texts=['I am a good singer.', 'I can’t sing well.'], label=0.09),
-    InputExample(texts=['I love going to farmers markets.', 'I don’t enjoy shopping at farmers markets.'], label=0.08),
-    InputExample(texts=['I am an animal lover.', 'I am not fond of animals.'], label=0.1),
-    InputExample(texts=['I enjoy going to wine tastings.', 'I don’t like the taste of wine.'], label=0.06),
-    InputExample(texts=['I am a patient person.', 'I am impatient.'], label=0.08),
-    InputExample(texts=['I love going to the gym.', 'I dislike exercising at the gym.'], label=0.09),
-]    # Define your train dataset, the dataloader, and the train loss
-
+# Define your train dataset, the dataloader, and the train loss
 train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
 train_loss = losses.CosineSimilarityLoss(model)
-
-
 
 # Tune the model
 model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10, warmup_steps=100)
 
 model.save("./third_party/fine_tuned_model")
-#
