@@ -9,8 +9,9 @@ df.fillna(0,inplace = True)
 # Extract the 'Text1', 'Text2', and 'Similarity' columns from the dataframe
 texts1 = df['Text1'].astype(str).tolist()
 texts2 = df['Text2'].astype(str).tolist()
-similarities = df['Similarity'].astype(float).tolist()  # Convert the similarities to float
-
+similarities = df['Similarity'].tolist()  # Convert the similarities to float
+similarities.remove("Similarity")
+similarities = df['Similarity'].astype(float).tolist()
 # Create InputExample objects from the data
 train_examples = [InputExample(texts=[text1, text2], label=float(similarity)) for text1, text2, similarity in zip(texts1, texts2, similarities)]
 
