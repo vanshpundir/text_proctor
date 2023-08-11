@@ -22,3 +22,7 @@ print("Cosine Similarity Example 1:", cosine_similarity_score.item())
 
 cosine_similarity_score = torch.cosine_similarity(embeddings2[0], embeddings2[1], dim=0)
 print("Cosine Similarity Example 2:", cosine_similarity_score.item())
+
+
+# Evaluation
+# we require contrastive loss
