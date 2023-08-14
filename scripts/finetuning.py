@@ -23,4 +23,6 @@ train_loss = losses.CosineSimilarityLoss(model)
 model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10, warmup_steps=100)
 
 # Save the fine-tuned model
+
 model.save("./third_party/fine_tuned_model")
+

@@ -16,8 +16,10 @@ model = SentenceTransformer(config['model_name'], device=config['device'])
 def get_similarity():
     data = request.get_json()
 
+
     text1 = data.get('text1')
     text2 = data.get('text2')
+    print(text2)
 
     # Compute cosine similarity
     embeddings = model.encode([text1, text2], convert_to_tensor=True)
